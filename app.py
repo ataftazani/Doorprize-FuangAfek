@@ -3,6 +3,7 @@ import extra_streamlit_components as stx
 import os
 import time
 import random
+import threading  # TAMBAHAN BARU: Untuk sistem antrean anti-bentrok
 
 # 1. Setup Halaman
 st.set_page_config(page_title="Doorprize", layout="centered", initial_sidebar_state="collapsed")
@@ -38,26 +39,34 @@ with col2:
     except:
         pass 
 
-# 4. SISTEM MESIN NOMOR & COOKIES
+# ==========================================
+# 4. SISTEM MESIN NOMOR (ANTI BENTROK)
+# ==========================================
 cookie_manager = stx.CookieManager(key="manager_doorprize")
 
+# Membuat Pintu Kunci (Lock) agar proses klik barengan tetap ngantre
+file_lock = threading.Lock()
+
 def get_new_number():
-    file_name = "counter.txt"
-    if not os.path.exists(file_name):
+    with file_lock:  # <--- Ini yang menjamin nomor TIDAK AKAN PERNAH KEMBAR
+        file_name = "counter.txt"
+        if not os.path.exists(file_name):
+            with open(file_name, "w") as f:
+                f.write("0")
+        with open(file_name, "r") as f:
+            current_num = int(f.read().strip())
+        new_num = current_num + 1
         with open(file_name, "w") as f:
-            f.write("0")
-    with open(file_name, "r") as f:
-        current_num = int(f.read().strip())
-    new_num = current_num + 1
-    with open(file_name, "w") as f:
-        f.write(str(new_num))
-    return new_num
+            f.write(str(new_num))
+        return new_num
 
 user_number = cookie_manager.get(cookie="doorprize_num")
 if user_number is None and 'temp_number' in st.session_state:
     user_number = st.session_state['temp_number']
 
+# ==========================================
 # 5. AMBIL NOMOR (Tombol / Animasi / Hasil)
+# ==========================================
 if user_number is None:
     wadah_tombol = st.empty()
     diklik = wadah_tombol.button("AMBIL NOMOR", use_container_width=True)
@@ -90,28 +99,26 @@ st.markdown("<hr style='margin-top: 5px; margin-bottom: 10px; border: 0; border-
 st.markdown("<h5 style='text-align: center; margin-top: 0px; margin-bottom: 0px; line-height: 1.3; color: #CCCCCC;'>Nomor Doorprize Halal Bihalal<br>Keluarga Besar<br>Fuang Ali & Fuang Ape'</h5>", unsafe_allow_html=True)
 
 # ==========================================
-# 7. PANEL RAHASIA PANITIA (CEK TOTAL & RESET)
+# 7. PANEL RAHASIA PANITIA (DISAMARKAN)
 # ==========================================
-st.write("") 
-st.write("") 
-with st.expander("⚙️ Panel Panitia"):
-    # PIN untuk membuka akses (diset: 2026)
-    pin = st.text_input("Masukkan PIN", type="password")
-    if pin == "2026":
-        # Cek Total Data
+# Memberikan jarak spasi yang jauh ke bawah agar terpisah dari teks utama
+st.markdown("<br><br><br><br><br>", unsafe_allow_html=True) 
+
+# Disamarkan sebagai tulisan versi aplikasi (v.1.0.0)
+with st.expander("v.1.0.0"):
+    pin = st.text_input("Kode Akses", type="password")
+    if pin == "7268": # PIN-nya 7268
         if os.path.exists("counter.txt"):
             with open("counter.txt", "r") as f:
                 total_terambil = f.read().strip()
         else:
             total_terambil = "0"
         
-        st.success(f"🎉 Total partisipan sejauh ini: **{total_terambil} orang**")
+        st.success(f"Total partisipan: **{total_terambil} orang**")
         
-        # Tombol Reset
-        st.warning("Tekan tombol di bawah untuk mengulang nomor dari 0.")
-        if st.button("🔄 RESET NOMOR KE 0", use_container_width=True):
+        if st.button("RESET NOMOR KE 0", use_container_width=True):
             with open("counter.txt", "w") as f:
-                f.write("0") # Mengembalikan isi file menjadi 0
-            st.success("Berhasil direset! Memuat ulang...")
+                f.write("0") 
+            st.success("Direset! Memuat ulang...")
             time.sleep(1)
             st.rerun()
