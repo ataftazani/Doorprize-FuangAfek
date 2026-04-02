@@ -75,7 +75,7 @@ if user_number is None:
         wadah_tombol.empty()
         
         new_num = get_new_number()
-        cookie_manager.set("doorprize_num", str(new_num), max_age=86400)
+        cookie_manager.set("doorprize_num", str(new_num), max_age=604800)
         st.session_state['temp_number'] = str(new_num)
         
         wadah_teks = st.empty()
