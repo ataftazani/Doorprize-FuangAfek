@@ -7,7 +7,7 @@ import random
 # 1. Setup Halaman
 st.set_page_config(page_title="Doorprize", layout="centered", initial_sidebar_state="collapsed")
 
-# 2. CSS Custom (Ekstra Rapat & Kompak)
+# 2. CSS Custom 
 st.markdown("""
     <style>
         .block-container {
@@ -15,13 +15,8 @@ st.markdown("""
             padding-bottom: 0rem !important;
         }
         header {visibility: hidden;}
+        div[data-testid="stVerticalBlock"] { gap: 0rem !important; }
         
-        /* PAKSA STREAMLIT MENGHILANGKAN JARAK BAWAAN */
-        div[data-testid="stVerticalBlock"] {
-            gap: 0rem !important; 
-        }
-        
-        /* Desain Tombol */
         .stButton>button {
             min-height: 55px;
             font-size: 20px;
@@ -35,7 +30,7 @@ st.markdown("""
     </style>
 """, unsafe_allow_html=True)
 
-# 3. URUTAN 1: Menampilkan Foto Banner
+# 3. Menampilkan Foto Banner
 col1, col2, col3 = st.columns([1, 4, 1])
 with col2:
     try:
@@ -58,12 +53,11 @@ def get_new_number():
         f.write(str(new_num))
     return new_num
 
-# Baca dari cookies atau memori sementara
 user_number = cookie_manager.get(cookie="doorprize_num")
 if user_number is None and 'temp_number' in st.session_state:
     user_number = st.session_state['temp_number']
 
-# 5. URUTAN 2: AMBIL NOMOR (Tombol / Animasi / Hasil)
+# 5. AMBIL NOMOR (Tombol / Animasi / Hasil)
 if user_number is None:
     wadah_tombol = st.empty()
     diklik = wadah_tombol.button("AMBIL NOMOR", use_container_width=True)
@@ -88,11 +82,36 @@ if user_number is None:
         time.sleep(0.4)
         st.rerun()
 else:
-    # Tampilan Final Nomor (Hijau Tua, Margin dibuat Nol agar merapat ke atas)
     st.markdown(f"<h1 style='text-align: center; font-size: 110px; margin-top: 0px; margin-bottom: 0px; color: #1B5E20; line-height: 1;'>{int(user_number):03d}</h1>", unsafe_allow_html=True)
-    # Teks instruksi diterangkan warnanya agar nampak di Dark Mode
     st.markdown("<p style='text-align: center; font-size: 14px; margin-top: 0px; margin-bottom: 15px; color: #B0B0B0;'>Tunjukkan layar ini ke panitia</p>", unsafe_allow_html=True)
 
-# 6. URUTAN 3: TEKS HALAL BIHALAL DI BAWAH (Merapat)
+# 6. TEKS HALAL BIHALAL
 st.markdown("<hr style='margin-top: 5px; margin-bottom: 10px; border: 0; border-top: 1px solid #444444;'>", unsafe_allow_html=True)
 st.markdown("<h5 style='text-align: center; margin-top: 0px; margin-bottom: 0px; line-height: 1.3; color: #CCCCCC;'>Nomor Doorprize Halal Bihalal<br>Keluarga Besar<br>Fuang Ali & Fuang Ape'</h5>", unsafe_allow_html=True)
+
+# ==========================================
+# 7. PANEL RAHASIA PANITIA (CEK TOTAL & RESET)
+# ==========================================
+st.write("") 
+st.write("") 
+with st.expander("⚙️ Panel Panitia"):
+    # PIN untuk membuka akses (diset: 2026)
+    pin = st.text_input("Masukkan PIN", type="password")
+    if pin == "2026":
+        # Cek Total Data
+        if os.path.exists("counter.txt"):
+            with open("counter.txt", "r") as f:
+                total_terambil = f.read().strip()
+        else:
+            total_terambil = "0"
+        
+        st.success(f"🎉 Total partisipan sejauh ini: **{total_terambil} orang**")
+        
+        # Tombol Reset
+        st.warning("Tekan tombol di bawah untuk mengulang nomor dari 0.")
+        if st.button("🔄 RESET NOMOR KE 0", use_container_width=True):
+            with open("counter.txt", "w") as f:
+                f.write("0") # Mengembalikan isi file menjadi 0
+            st.success("Berhasil direset! Memuat ulang...")
+            time.sleep(1)
+            st.rerun()
