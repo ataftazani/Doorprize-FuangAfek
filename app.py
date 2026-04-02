@@ -36,7 +36,7 @@ with col2:
         pass 
 
 # 4. Teks Judul
-st.markdown("<h4 style='text-align: center; margin-top: 5px; margin-bottom: 5px; line-height: 1.2;'>Halal Bihalal<br>Keluarga Besar<br>Fuang Ali & Fuang Ape'</h4>", unsafe_allow_html=True)
+st.markdown("<h4 style='text-align: center; margin-top: 5px; margin-bottom: 5px; line-height: 1.2;'>Nomor Doorprize Halal Bihalal<br>Keluarga Besar<br>Fuang Ali & Fuang Ape'</h4>", unsafe_allow_html=True)
 
 # 5. Mesin Nomor & Cookies
 cookie_manager = stx.CookieManager(key="manager_doorprize")
