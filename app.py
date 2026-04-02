@@ -2,97 +2,93 @@ import streamlit as st
 import extra_streamlit_components as stx
 import os
 import time
-import random  # Tambahan untuk mengacak angka animasi
 
-# 1. Setup Halaman
-st.set_page_config(page_title="Doorprize", layout="centered")
+# 1. Setup Halaman agar gelap dan rapi
+st.set_page_config(layout="centered", initial_sidebar_state="collapsed")
 
-# 2. CSS Custom
-st.markdown("""
+# 2. Definisikan CSS yang Detail untuk Centering, Warna, dan Gaya
+# Ganti warna hijau norak menjadi hijau tua yang elegan (#1B5E20)
+css = """
     <style>
-        .block-container {
-            padding-top: 1rem !important;
-            padding-bottom: 0rem !important;
-        }
-        header {visibility: hidden;}
+        /* Sembunyikan menu Streamlit untuk tampilan app bersih */
+        #MainMenu {visibility: hidden;}
+        footer {visibility: hidden;}
+        .main {background-color: #121212;}
+        .reportview-container .main .block-container{padding-top: 1rem; padding-bottom: 0rem; padding-left: 1rem; padding-right: 1rem; color: #E0E0E0;}
+
+        /* CSS untuk memusatkan semua konten */
+        .centered-content {text-align: center; display: flex; flex-direction: column; align-items: center;}
+        .banner-container {width: 100%; max-width: 600px; border-radius: 12px; overflow: hidden; margin-bottom: 2rem;}
+s
+        /* CSS untuk Gaya Teks: Tegak, Tebal, dan Sempurna di Tengah */
+        .main-title {font-weight: bold; font-size: 1.5rem; margin-top: 1rem; margin-bottom: 0.5rem; color: #E0E0E0;}
+        .sub-title {font-weight: bold; font-size: 1.8rem; margin-top: 0rem; margin-bottom: 1rem; color: #E0E0E0;}
+        .main-subtitle-desc {font-weight: bold; font-size: 1.5rem; margin-top: 0rem; margin-bottom: 2rem; color: #E0E0E0;}
+
+        /* CSS untuk Tampilan Nomor: Besar, Tebal, Tegak, Hijau Tua */
+        .number-display {font-family: 'Montserrat', sans-serif; font-weight: 800; font-size: 8rem; color: #1B5E20; margin-top: 2rem; margin-bottom: 1rem; text-align: center; }
+        .number-instruction {font-size: 1rem; color: #A0A0A0; font-weight: 400; margin-bottom: 3rem; text-align: center;}
         
-        .stButton>button {
-            min-height: 60px;
-            font-size: 22px;
-            font-weight: bold;
-            background-color: #ff4b4b;
-            color: white;
-            border-radius: 10px;
-            margin-top: 5px;
-        }
+        /* CSS untuk Tombol Ambil Nomor (untuk keadaan awal) */
+        .stButton>button {width: 100%; border-radius: 20px; border: 2px solid #ff4b4b; color: white; background-color: #ff4b4b; font-size: 1.2rem; font-weight: bold; padding: 1rem; margin-bottom: 2rem;}
+        
+        .disclaimer {font-size: 0.8rem; color: #606060; font-weight: 300; margin-top: 1rem; text-align: center;}
     </style>
-""", unsafe_allow_html=True)
+"""
+st.markdown(css, unsafe_allow_html=True)
 
-# 3. Menampilkan Foto (Ganti 'banner.jpg' dengan nama file di GitHub)
-col1, col2, col3 = st.columns([1, 4, 1])
-with col2:
-    try:
-        st.image("BANNER 2026 low.jpg", use_container_width=True) 
-    except:
-        pass 
+# 3. State management untuk persistensi nomor
+if 'number' not in st.session_state:
+    st.session_state.number = None
 
-# 4. Teks Judul
-st.markdown("<h4 style='text-align: center; margin-top: 5px; margin-bottom: 5px; line-height: 1.2;'>Nomor Doorprize Halal Bihalal<br>Keluarga Besar<br>Fuang Ali & Fuang Ape'</h4>", unsafe_allow_html=True)
-
-# 5. Mesin Nomor & Cookies
-cookie_manager = stx.CookieManager(key="manager_doorprize")
-
-def get_new_number():
-    file_name = "counter.txt"
-    if not os.path.exists(file_name):
-        with open(file_name, "w") as f:
-            f.write("0")
-    with open(file_name, "r") as f:
-        current_num = int(f.read().strip())
-    new_num = current_num + 1
-    with open(file_name, "w") as f:
-        f.write(str(new_num))
-    return new_num
-
-st.write("") 
-
-# Baca dari cookies atau memori sementara
-user_number = cookie_manager.get(cookie="doorprize_num")
-if user_number is None and 'temp_number' in st.session_state:
-    user_number = st.session_state['temp_number']
-
-# 6. Logika Tampilan Utama & Animasi
-if user_number is None:
-    # Buat wadah untuk tombol agar bisa disembunyikan saat ditekan
-    wadah_tombol = st.empty()
-    diklik = wadah_tombol.button("AMBIL NOMOR", use_container_width=True)
-    
-    if diklik:
-        # 1. Sembunyikan tombol
-        wadah_tombol.empty()
+# Fungsi untuk menampilkan nomor final
+def display_final_number(number_str):
+    with st.container():
+        st.markdown(f'<div class="centered-content">', unsafe_allow_html=True)
         
-        # 2. Ambil nomor baru dan simpan (Terjadi di belakang layar)
-        new_num = get_new_number()
-        cookie_manager.set("doorprize_num", str(new_num), max_age=86400)
-        st.session_state['temp_number'] = str(new_num)
-        
-        # 3. Siapkan wadah untuk teks dan animasi angka
-        wadah_teks = st.empty()
-        wadah_animasi = st.empty()
-        
-        wadah_teks.markdown("<p style='text-align: center; font-size: 16px; color: gray; margin-bottom: -10px;'>Mengacak nomor...</p>", unsafe_allow_html=True)
-        
-        # 4. LOOP ANIMASI: Putar angka acak selama ~1.5 detik
-        for _ in range(15):
-            angka_acak = random.randint(1, 999)
-            # Tampilkan angka acak dengan warna abu-abu agar terlihat sedang 'loading'
-            wadah_animasi.markdown(f"<h1 style='text-align: center; font-size: 85px; margin-top: 0px; color: #CCCCCC; line-height: 1;'>{angka_acak:03d}</h1>", unsafe_allow_html=True)
-            time.sleep(0.08) # Kecepatan pergantian angka
-            
-        # 5. Jeda sedikit untuk memastikan cookies aman, lalu refresh untuk memunculkan nomor asli
-        time.sleep(0.4)
-        st.rerun()
+        # Muat gambar banner (asumsi file bernama 'banner.png') dan pusatkan
+        try:
+            st.image('BANNER 2026 low.jpg', use_column_width=True)
+        except:
+            st.warning("Pastikan file 'banner.png' ada di folder aplikasi Anda.")
+
+        # Judul Tegak, Tebal, Centered
+        st.markdown(f'<div class="main-title">Halal Bihalal</div>', unsafe_allow_html=True)
+        st.markdown(f'<div class="sub-title">Keluarga Besar</div>', unsafe_allow_html=True)
+        st.markdown(f'<div class="main-subtitle-desc">Fuang Ali & Fuang Ape\'</div>', unsafe_allow_html=True)
+
+        # Bagian Nomor: Tegak, Hijau Tua, Besar, Centered
+        st.markdown(f'<div class="number-display">{number_str}</div>', unsafe_allow_html=True)
+        st.markdown(f'<div class="number-instruction">Tunjukkan layar ini kepada panitia saat pengambilan hadiah.</div>', unsafe_allow_html=True)
+        st.markdown(f'</div>', unsafe_allow_html=True)
+
+# Fungsi untuk menampilkan keadaan awal (sebelum ambil nomor)
+def display_initial_state():
+    with st.container():
+        st.markdown(f'<div class="centered-content">', unsafe_allow_html=True)
+        # Muat gambar banner (asumsi file bernama 'banner.png') dan pusatkan
+        try:
+            st.image('banner.png', use_column_width=True)
+        except:
+            pass
+
+        # Judul Tegak, Tebal, Centered
+        st.markdown(f'<div class="main-title">Halal Bihalal</div>', unsafe_allow_html=True)
+        st.markdown(f'<div class="sub-title">Keluarga Besar</div>', unsafe_allow_html=True)
+        st.markdown(f'<div class="main-subtitle-desc">Fuang Ali & Fuang Ape\'</div>', unsafe_allow_html=True)
+
+        if st.button("Ambil Nomor Doorprize"):
+            # Animasi (acak nomor sebentar)
+            with st.spinner("Mengacak nomor..."):
+                import time
+                time.sleep(1.5) # Durasi animasi
+            st.session_state.number = "012" # Nomor mock
+            st.experimental_rerun() # Refresh untuk menampilkan nomor
+
+        st.markdown(f'</div>', unsafe_allow_html=True)
+
+# Tampilkan halaman berdasarkan state nomor
+if st.session_state.number:
+    display_final_number(st.session_state.number)
 else:
-    # Tampilan Final (Nomor Asli Berwarna Merah)
-    st.markdown(f"<h1 style='text-align: center; font-size: 85px; margin-top: 0px; color: #FF4B4B; line-height: 1;'>{int(user_number):03d}</h1>", unsafe_allow_html=True)
-    st.markdown("<p style='text-align: center; font-size: 14px; margin-top: -15px; font-weight: bold;'>Tunjukkan layar ini ke panitia</p>", unsafe_allow_html=True)
+    display_initial_state()
