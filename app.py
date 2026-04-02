@@ -4,21 +4,18 @@ import os
 import time
 import random
 
-# 1. Setup Halaman (Sidebar di-set 'collapsed' agar sembunyi dari peserta)
-st.set_page_config(page_title="Doorprize", layout="centered", initial_sidebar_state="collapsed")
+# 1. Setup Halaman (Normal, tanpa sidebar)
+st.set_page_config(page_title="Doorprize", layout="centered")
 
-# 2. CSS Custom (Ekstra Rapat & Kompak)
+# 2. CSS Custom (Aman untuk HP, tidak terlalu agresif)
 st.markdown("""
     <style>
         .block-container {
             padding-top: 1.5rem !important;
-            padding-bottom: 0rem !important;
+            padding-bottom: 1rem !important;
         }
+        /* Sembunyikan menu atas bawaan Streamlit agar bersih */
         header {visibility: hidden;}
-        
-        div[data-testid="stVerticalBlock"] {
-            gap: 0rem !important; 
-        }
         
         .stButton>button {
             min-height: 55px;
@@ -27,45 +24,11 @@ st.markdown("""
             background-color: #ff4b4b;
             color: white;
             border-radius: 10px;
-            margin-top: 10px;
-            margin-bottom: 10px;
+            margin-top: 15px;
+            margin-bottom: 15px;
         }
     </style>
 """, unsafe_allow_html=True)
-
-# ==========================================
-# 🤫 PANEL RAHASIA PANITIA (DI SIDEBAR)
-# ==========================================
-with st.sidebar:
-    st.markdown("<h3 style='text-align: center;'>🛠️ Panel Panitia</h3>", unsafe_allow_html=True)
-    st.markdown("<p style='text-align: center; font-size:12px; color:gray;'>Masukkan kode rahasia untuk mereset antrian.</p>", unsafe_allow_html=True)
-    
-    # KODE RAHASIANYA ADALAH: fuang2026 (Bisa kamu ganti sendiri)
-    kode_akses = st.text_input("Kode Akses", type="password")
-    
-    if kode_akses == "726828":
-        st.success("Akses Terbuka!")
-        if st.button("🚨 RESET SEMUA DATA 🚨", use_container_width=True):
-            # 1. Reset angka counter kembali ke 0
-            with open("counter.txt", "w") as f:
-                f.write("0")
-            
-            # 2. Naikkan "Versi" Cookies agar HP peserta lama ter-reset
-            if os.path.exists("version.txt"):
-                with open("version.txt", "r") as f:
-                    v = int(f.read().strip())
-            else:
-                v = 1
-            with open("version.txt", "w") as f:
-                f.write(str(v + 1))
-            
-            # 3. Hapus memori sementara di layar
-            if 'temp_number' in st.session_state:
-                del st.session_state['temp_number']
-                
-            st.success("Sistem berhasil direset! Semua peserta bisa ambil nomor baru.")
-            time.sleep(2) # Beri waktu baca notif
-            st.rerun()
 
 # ==========================================
 # LOGIKA MEMBACA VERSI COOKIE AKTIF
@@ -78,17 +41,16 @@ else:
     with open("version.txt", "w") as f:
         f.write("1")
 
-# Nama cookie ini akan berubah tiap kali tombol reset dipencet (misal: doorprize_v1, doorprize_v2, dst)
 NAMA_COOKIE_AKTIF = f"doorprize_v{cookie_version}"
-
 
 # 3. URUTAN 1: Menampilkan Foto Banner
 col1, col2, col3 = st.columns([1, 4, 1])
 with col2:
     try:
-        st.image("banner.jpg", use_container_width=True) 
+        # PENTING: Pastikan nama file ini SAMA PERSIS dengan yang di GitHub
+        st.image("BANNER 2026 low.jpg", use_container_width=True) 
     except:
-        pass 
+        st.error("🚨 Foto tidak ditemukan! Pastikan nama file di GitHub persis: BANNER 2026 low.jpg")
 
 # 4. SISTEM MESIN NOMOR & COOKIES
 cookie_manager = stx.CookieManager(key="manager_doorprize")
@@ -119,8 +81,7 @@ if user_number is None:
         wadah_tombol.empty()
         
         new_num = get_new_number()
-        # Simpan cookie pakai NAMA_COOKIE_AKTIF dengan umur 7 hari (604800 detik)
-        cookie_manager.set(NAMA_COOKIE_AKTIF, str(new_num), max_age=604800)
+        cookie_manager.set(NAMA_COOKIE_AKTIF, str(new_num), max_age=604800) # Aktif 7 Hari
         st.session_state['temp_number'] = str(new_num)
         
         wadah_teks = st.empty()
@@ -136,9 +97,41 @@ if user_number is None:
         time.sleep(0.4)
         st.rerun()
 else:
-    st.markdown(f"<h1 style='text-align: center; font-size: 110px; margin-top: 0px; margin-bottom: 0px; color: #1B5E20; line-height: 1;'>{int(user_number):03d}</h1>", unsafe_allow_html=True)
-    st.markdown("<p style='text-align: center; font-size: 14px; margin-top: 0px; margin-bottom: 15px; color: #B0B0B0;'>Tunjukkan layar ini ke panitia</p>", unsafe_allow_html=True)
+    st.markdown(f"<h1 style='text-align: center; font-size: 110px; margin-top: 5px; margin-bottom: 0px; color: #1B5E20; line-height: 1;'>{int(user_number):03d}</h1>", unsafe_allow_html=True)
+    st.markdown("<p style='text-align: center; font-size: 14px; margin-top: 0px; margin-bottom: 20px; color: #B0B0B0;'>Tunjukkan layar ini ke panitia</p>", unsafe_allow_html=True)
 
 # 6. URUTAN 3: TEKS HALAL BIHALAL DI BAWAH
-st.markdown("<hr style='margin-top: 5px; margin-bottom: 10px; border: 0; border-top: 1px solid #444444;'>", unsafe_allow_html=True)
-st.markdown("<h5 style='text-align: center; margin-top: 0px; margin-bottom: 0px; line-height: 1.3; color: #CCCCCC;'>Nomor Doorprize Halal Bihalal<br>Keluarga Besar<br>Fuang Ali & Fuang Ape'</h5>", unsafe_allow_html=True)
+st.markdown("<hr style='margin-top: 10px; margin-bottom: 10px; border: 0; border-top: 1px solid #444444;'>", unsafe_allow_html=True)
+st.markdown("<h5 style='text-align: center; margin-top: 0px; margin-bottom: 30px; line-height: 1.3; color: #CCCCCC;'>Nomor Doorprize Halal Bihalal<br>Keluarga Besar<br>Fuang Ali & Fuang Ape'</h5>", unsafe_allow_html=True)
+
+
+# ==========================================
+# 🤫 PANEL RAHASIA PANITIA (DI PALING BAWAH LAYAR)
+# ==========================================
+with st.expander("⚙️"):
+    st.markdown("<p style='text-align: center; font-size:12px; color:gray;'>Panel Khusus Panitia</p>", unsafe_allow_html=True)
+    kode_akses = st.text_input("Kode Akses", type="password")
+    
+    if kode_akses == "halbi2026":
+        st.success("Akses Terbuka!")
+        if st.button("🚨 RESET SEMUA DATA 🚨", use_container_width=True):
+            # 1. Reset angka counter
+            with open("counter.txt", "w") as f:
+                f.write("0")
+            
+            # 2. Naikkan versi cookie
+            if os.path.exists("version.txt"):
+                with open("version.txt", "r") as f:
+                    v = int(f.read().strip())
+            else:
+                v = 1
+            with open("version.txt", "w") as f:
+                f.write(str(v + 1))
+            
+            # 3. Hapus memori sementara
+            if 'temp_number' in st.session_state:
+                del st.session_state['temp_number']
+                
+            st.success("Sistem berhasil direset!")
+            time.sleep(2)
+            st.rerun()
