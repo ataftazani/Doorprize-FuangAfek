@@ -3,11 +3,12 @@ import extra_streamlit_components as stx
 import os
 import time
 import random
+import datetime  # TAMBAHAN PENTING UNTUK MENGUNCI UMUR COOKIE
 
 # 1. Setup Halaman
 st.set_page_config(page_title="Doorprize", layout="centered")
 
-# 2. CSS Custom (Rapat dan Bersih)
+# 2. CSS Custom 
 st.markdown("""
     <style>
         .block-container {
@@ -85,7 +86,13 @@ if user_number is None:
     if wadah_tombol.button("AMBIL NOMOR", use_container_width=True):
         wadah_tombol.empty()
         new_num = get_new_number()
-        cookie_manager.set(NAMA_COOKIE_AKTIF, str(new_num), max_age=604800)
+        
+        # ==========================================
+        # PERBAIKAN BUG SAFARI (MENGUNCI COOKIE 7 HARI)
+        # ==========================================
+        kunci_kadaluarsa = datetime.datetime.now() + datetime.timedelta(days=7)
+        cookie_manager.set(cookie=NAMA_COOKIE_AKTIF, val=str(new_num), expires_at=kunci_kadaluarsa)
+        
         st.session_state['temp_number'] = str(new_num)
         
         wadah_teks = st.empty()
