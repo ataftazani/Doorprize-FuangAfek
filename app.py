@@ -29,24 +29,20 @@ st.markdown("""
     </style>
 """, unsafe_allow_html=True)
 
-# 3. Menampilkan Foto (Ganti 'banner.jpg' dengan nama file fotomu yang benar di GitHub)
-# Kita taruh di dalam kolom agar ukurannya tidak selebar layar HP
+# 3. Menampilkan Foto (Ingat: Ganti 'banner.jpg' dengan nama file fotomu di GitHub!)
 col1, col2, col3 = st.columns([1, 4, 1])
 with col2:
     try:
         st.image("BANNER 2026 low.jpg", use_container_width=True) 
     except:
-        pass # Kalau nama file salah, aplikasi tidak akan error, fotonya saja yang tidak muncul
+        pass 
 
-# 4. Teks Judul (Dibuat kecil dan padat menggunakan HTML)
+# 4. Teks Judul (Dibuat kecil dan padat)
 st.markdown("<h4 style='text-align: center; margin-top: 5px; margin-bottom: 5px; line-height: 1.2;'>Halal Bihalal<br>Keluarga Besar Fuang Ali & Fuang Ape'</h4>", unsafe_allow_html=True)
 
-# 5. Mesin Nomor (Cookies & Counter)
-@st.cache_resource
-def get_manager():
-    return stx.CookieManager()
-
-cookie_manager = get_manager()
+# 5. Mesin Nomor & Cookies (INI BAGIAN YANG DIPERBAIKI)
+# Langsung dipanggil tanpa cache agar tidak error
+cookie_manager = stx.CookieManager(key="manager_doorprize")
 
 def get_new_number():
     file_name = "counter.txt"
@@ -65,12 +61,10 @@ user_number = cookie_manager.get(cookie="doorprize_num")
 
 # 6. Logika Tampilan: Tombol VS Nomor Besar
 if user_number is None:
-    # Jika belum punya nomor, langsung muncul tombol (tidak perlu scroll)
     if st.button("AMBIL NOMOR", use_container_width=True):
         new_num = get_new_number()
         cookie_manager.set("doorprize_num", str(new_num), max_age=86400)
         st.rerun()
 else:
-    # Jika sudah diklik, nomor raksasa langsung muncul menggantikan tombol
     st.markdown(f"<h1 style='text-align: center; font-size: 85px; margin-top: 0px; color: #FF4B4B; line-height: 1;'>{int(user_number):03d}</h1>", unsafe_allow_html=True)
     st.markdown("<p style='text-align: center; font-size: 14px; margin-top: -15px; font-weight: bold;'>Tunjukkan layar ini ke panitia</p>", unsafe_allow_html=True)
