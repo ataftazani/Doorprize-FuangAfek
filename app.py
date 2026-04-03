@@ -46,8 +46,9 @@ def get_current_version():
 def get_total_count():
     if os.path.exists("counter.txt"):
         with open("counter.txt", "r") as f:
-            return f.read().strip()
-    return "0"
+            count = int(f.read().strip())
+            return str(count) if count >= 100 else "0"
+    return "100"
 
 cookie_version = get_current_version()
 NAMA_COOKIE_AKTIF = f"doorprize_v{cookie_version}"
