@@ -3,7 +3,7 @@ import extra_streamlit_components as stx
 import os
 import time
 import random
-import datetime  # TAMBAHAN PENTING UNTUK MENGUNCI UMUR COOKIE
+import datetime 
 
 # 1. Setup Halaman
 st.set_page_config(page_title="Doorprize", layout="centered")
@@ -35,7 +35,7 @@ st.markdown("""
 """, unsafe_allow_html=True)
 
 # ==========================================
-# LOGIKA VERSI & COUNTER
+# LOGIKA VERSI & COUNTER (MULAI DARI 100)
 # ==========================================
 def get_current_version():
     if os.path.exists("version.txt"):
@@ -47,8 +47,10 @@ def get_total_count():
     if os.path.exists("counter.txt"):
         with open("counter.txt", "r") as f:
             count = int(f.read().strip())
-            return str(count) if count >= 100 else "0"
-    return "100"
+            # Hitung jumlah peserta aslinya: (angka saat ini dikurangi 100)
+            total = count - 100
+            return str(total) if total > 0 else "0"
+    return "0"
 
 cookie_version = get_current_version()
 NAMA_COOKIE_AKTIF = f"doorprize_v{cookie_version}"
@@ -68,10 +70,10 @@ def get_new_number():
     file_name = "counter.txt"
     if not os.path.exists(file_name):
         with open(file_name, "w") as f:
-            f.write("100")
+            f.write("100") # Basisnya adalah 100
     with open(file_name, "r") as f:
         current_num = int(f.read().strip())
-    new_num = current_num + 1
+    new_num = current_num + 1 # Jadi orang pertama dapat 100 + 1 = 101
     with open(file_name, "w") as f:
         f.write(str(new_num))
     return new_num
@@ -88,9 +90,6 @@ if user_number is None:
         wadah_tombol.empty()
         new_num = get_new_number()
         
-        # ==========================================
-        # PERBAIKAN BUG SAFARI (MENGUNCI COOKIE 7 HARI)
-        # ==========================================
         kunci_kadaluarsa = datetime.datetime.now() + datetime.timedelta(days=7)
         cookie_manager.set(cookie=NAMA_COOKIE_AKTIF, val=str(new_num), expires_at=kunci_kadaluarsa)
         
@@ -101,7 +100,8 @@ if user_number is None:
         wadah_teks.markdown("<p style='text-align: center; font-size: 16px; color: #A0A0A0; margin-top: 10px;'>Mengacak nomor...</p>", unsafe_allow_html=True)
         
         for _ in range(15):
-            angka_acak = random.randint(1, 999)
+            # Angka acak animasinya juga disesuaikan biar muternya di angka 100-an
+            angka_acak = random.randint(101, 999)
             wadah_animasi.markdown(f"<h1 style='text-align: center; font-size: 90px; margin-top: 0px; color: #888888; line-height: 1;'>{angka_acak:03d}</h1>", unsafe_allow_html=True)
             time.sleep(0.08) 
             
@@ -126,10 +126,11 @@ with st.expander("⚙️"):
     kode_akses = st.text_input("Kode Akses", type="password")
     if kode_akses == "726828":
         if st.button("🚨 RESET SEMUA DATA 🚨", use_container_width=True):
-            with open("counter.txt", "w") as f: f.write("0")
+            # Kunci utama: Reset dikembalikan ke angka 100, bukan 0!
+            with open("counter.txt", "w") as f: f.write("100") 
             v_baru = int(cookie_version) + 1
             with open("version.txt", "w") as f: f.write(str(v_baru))
             if 'temp_number' in st.session_state: del st.session_state['temp_number']
-            st.success("Berhasil direset!")
+            st.success("Berhasil direset! Antrian akan dimulai dari 101.")
             time.sleep(1.5)
             st.rerun()
