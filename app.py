@@ -67,7 +67,7 @@ def get_new_number():
     file_name = "counter.txt"
     if not os.path.exists(file_name):
         with open(file_name, "w") as f:
-            f.write("0")
+            f.write("100")
     with open(file_name, "r") as f:
         current_num = int(f.read().strip())
     new_num = current_num + 1
